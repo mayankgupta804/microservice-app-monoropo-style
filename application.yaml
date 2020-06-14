@@ -1,0 +1,14 @@
+# WEB SERVER PORT  
+APP_PORT: '8080'
+
+# DATABASE CONFIG
+DATABASE_MIGRATIONS_DIR: 'internal/migrations'
+DATABASE_HOST: 'localhost'
+DATABASE_PORT: '8001'
+DATABASE_NAME: 'squadcast?parseTime=true'
+DATABASE_USER: 'root'
+DATABASE_PASSWORD: 'easypeasy'
+DATABASE_DIALECT: 'mysql'
+
+# APP CONFIGS
+LOG_OUTPUT: 'console'
