@@ -8,6 +8,11 @@ type Server struct {
 	Port string
 }
 
+type GRPCServer struct {
+	Host string
+	Port string
+}
+
 type Logger struct {
 	Output string
 }
@@ -23,9 +28,10 @@ type Database struct {
 }
 
 type Config struct {
-	Server   Server
-	Database Database
-	Logger   Logger
+	Server     Server
+	GRPCServer GRPCServer
+	Database   Database
+	Logger     Logger
 }
 
 var App Config
@@ -42,6 +48,10 @@ func Load() {
 	App = Config{
 		Server: Server{
 			Port: getStringOrPanic("APP_PORT"),
+		},
+		GRPCServer: GRPCServer{
+			Host: getStringOrPanic("GRPC_SERVER_HOST"),
+			Port: getStringOrPanic("GRPC_APP_PORT"),
 		},
 		Database: Database{
 			Name:          getStringOrPanic("DATABASE_NAME"),
