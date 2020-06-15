@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package proto;
+
+message Request {
+    int64 id = 1;
+    string incident_status = 5;
+}
+
+message Response {
+    string notify = 1;
+}
+
+service EventHandler {
+    rpc EmitEvent(Request) returns (Response);
+}
