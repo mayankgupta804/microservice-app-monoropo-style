@@ -18,8 +18,8 @@ type incidentServiceImpl struct {
 }
 
 func NewIncidentService(repo repository.IncidentRepository) incidentServiceImpl {
-	ir := incidentServiceImpl{repo}
-	return ir
+	is := incidentServiceImpl{ir: repo}
+	return is
 }
 
 func (is incidentServiceImpl) CreateIncident(reqData serializer.CreateIncidentRequest) (int64, *domain.Error) {

@@ -9,6 +9,9 @@ import (
 	"github.com/urfave/cli"
 
 	"github.com/squadcast_assignment/internal/config"
+	client "github.com/squadcast_assignment/internal/eventhandler/grpc_client"
+	server "github.com/squadcast_assignment/internal/eventhandler/grpc_server"
+	"github.com/squadcast_assignment/internal/eventhandler/proto"
 	"github.com/squadcast_assignment/internal/infrastructure/database"
 	"github.com/squadcast_assignment/internal/migrations"
 	"github.com/squadcast_assignment/internal/repository"
@@ -29,17 +32,14 @@ func main() {
 			Name:        "start:webserver",
 			Description: "Start Incident Web Service",
 			Action: func(c *cli.Context) error {
-				if err := StartIncidentWebService(); err != nil {
-					return err
-				}
-				return nil
+				return StartIncidentWebService()
 			},
 		},
 		{
 			Name:        "start:eventhandler",
 			Description: "Start Event Handler Service",
 			Action: func(c *cli.Context) error {
-				return errors.New("Not implemented")
+				return StartEventHandler()
 			},
 		},
 		{
@@ -80,15 +80,21 @@ func StartIncidentWebService() error {
 	var db database.DBClient
 	var repo repository.IncidentRepository
 	var incidentService service.IncidentService
+	var grpcClient proto.EventHandlerClient
 
 	db, err = database.InitDatabaseConnection(config.App.Database)
 	if err != nil {
 		return fmt.Errorf("error encountered when connecting to DB: %v", err)
 	}
 
+	grpcClient, err = client.GetGRPClient(config.App.GRPCServer)
+	if err != nil {
+		return fmt.Errorf("error encountered when creating GRPC client: %v", err)
+	}
+
 	repo = repository.InitIncidentRepository(db)
 	incidentService = service.NewIncidentService(repo)
-	router := webserver.SetupRoutes(incidentService)
+	router := webserver.SetupRoutes(incidentService, grpcClient)
 	if err = webserver.StartServer(router, config.App.Server); err != nil {
 		return err
 	}
@@ -103,6 +109,20 @@ func SetLogOutput(logConfig config.Logger, logFilename string) error {
 		}
 		defer f.Close()
 		log.SetOutput(f)
+	}
+	return nil
+}
+
+func StartEventHandler() error {
+	var err error
+
+	err = SetLogOutput(config.App.Logger, "eventhandler.log")
+	if err != nil {
+		return fmt.Errorf("error encountered when setting log output: %v", err)
+	}
+
+	if err = server.StartGRPCServer(config.App.GRPCServer); err != nil {
+		return err
 	}
 	return nil
 }

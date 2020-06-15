@@ -1,11 +1,14 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/squadcast_assignment/internal/eventhandler/proto"
 	"github.com/squadcast_assignment/internal/model/domain"
 	"github.com/squadcast_assignment/internal/serializer"
 	"github.com/squadcast_assignment/internal/service"
@@ -13,6 +16,7 @@ import (
 
 type CreateIncidentHandler struct {
 	IncidentService service.IncidentService
+	GRPCClient      proto.EventHandlerClient
 }
 
 func (h CreateIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -45,19 +49,27 @@ func (h CreateIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	req := &proto.Request{Id: ID, IncidentStatus: "INCIDENT_CREATED"}
+	ctx := context.Background()
+	if resp, err := h.GRPCClient.EmitEvent(ctx, req); err == nil {
+		log.Printf("Event handler service notified: %v", resp.Notify)
+	} else {
+		log.Printf("Event handler service did not send any response. Error: %v", err)
+	}
+
 	successResponse := serializer.CreateIncidentResponse{
 		ID:     strconv.Itoa(int(ID)),
 		Status: "CREATED",
 	}
 
-	responseJson, err := json.Marshal(successResponse)
+	responseJSON, err := json.Marshal(successResponse)
 	if err != nil {
 		e := fmt.Errorf("could not parse resp json: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(domain.ErrToJSON(e, http.StatusInternalServerError))
 	}
 
-	w.Write(responseJson)
+	w.Write(responseJSON)
 }
 
 func (h CreateIncidentHandler) validateParams(reqBody serializer.CreateIncidentRequest) *domain.Error {
