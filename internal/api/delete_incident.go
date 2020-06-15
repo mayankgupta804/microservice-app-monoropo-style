@@ -43,7 +43,8 @@ func (h DeleteIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	deletionErr := h.IncidentService.DeleteIncident(int64(id))
 	if deletionErr != nil {
-		e := fmt.Errorf("incident deletion failed: %s", deletionErr.Error())
+		e := fmt.Errorf("incident deletion failed")
+		log.Printf("db error: %v", deletionErr.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(domain.ErrToJSON(e, http.StatusInternalServerError))
 		return
@@ -69,8 +70,4 @@ func (h DeleteIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Write(responseJSON)
-}
-
-func (h DeleteIncidentHandler) validateParams(reqBody serializer.DeleteIncidentRequest) *domain.Error {
-	return nil
 }

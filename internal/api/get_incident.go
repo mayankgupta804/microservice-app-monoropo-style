@@ -43,7 +43,8 @@ func (h GetIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	incident, fetchErr := h.IncidentService.GetIncident(int64(id))
 	if fetchErr != nil {
-		e := fmt.Errorf("error fetching incident: %s", fetchErr.Error())
+		e := fmt.Errorf("error fetching incident")
+		log.Printf("db error: %v", fetchErr.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(domain.ErrToJSON(e, http.StatusInternalServerError))
 		return

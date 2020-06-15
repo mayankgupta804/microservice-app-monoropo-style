@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -13,10 +12,12 @@ import (
 	server "github.com/squadcast_assignment/internal/eventhandler/grpc_server"
 	"github.com/squadcast_assignment/internal/eventhandler/proto"
 	"github.com/squadcast_assignment/internal/infrastructure/database"
+	queue "github.com/squadcast_assignment/internal/infrastructure/workqueue"
 	"github.com/squadcast_assignment/internal/migrations"
 	"github.com/squadcast_assignment/internal/repository"
 	"github.com/squadcast_assignment/internal/service"
 	"github.com/squadcast_assignment/internal/webserver"
+	worker "github.com/squadcast_assignment/internal/workers"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -46,7 +47,7 @@ func main() {
 			Name:        "start:worker",
 			Description: "Start worker of given type",
 			Action: func(c *cli.Context) error {
-				return errors.New("Not implemented")
+				return StartWorker(c.Args().First())
 			},
 		},
 		{
@@ -92,6 +93,10 @@ func StartIncidentWebService() error {
 		return fmt.Errorf("error encountered when creating GRPC client: %v", err)
 	}
 
+	defer func() {
+		db.Close()
+	}()
+
 	repo = repository.InitIncidentRepository(db)
 	incidentService = service.NewIncidentService(repo)
 	router := webserver.SetupRoutes(incidentService, grpcClient)
@@ -115,14 +120,60 @@ func SetLogOutput(logConfig config.Logger, logFilename string) error {
 
 func StartEventHandler() error {
 	var err error
+	var q queue.QueueClient
 
 	err = SetLogOutput(config.App.Logger, "eventhandler.log")
 	if err != nil {
 		return fmt.Errorf("error encountered when setting log output: %v", err)
 	}
 
-	if err = server.StartGRPCServer(config.App.GRPCServer); err != nil {
+	q, err = queue.GetConnectionToQueue(config.App.Queue.Address)
+	if err != nil {
+		return fmt.Errorf("error encountered when starting queue service: %v", err)
+	}
+	defer func() {
+		q.Close()
+	}()
+
+	if err = server.StartGRPCServer(q, config.App.GRPCServer); err != nil {
 		return err
 	}
+	return nil
+}
+
+func StartWorker(workerName string) error {
+	var err error
+	var q queue.QueueClient
+	var db database.DBClient
+	var w worker.WorkerService
+
+	err = SetLogOutput(config.App.Logger, "eventhandler.log")
+	if err != nil {
+		return fmt.Errorf("error encountered when setting log output: %v", err)
+	}
+
+	q, err = queue.GetConnectionToQueue(config.App.Queue.Address)
+	if err != nil {
+		return fmt.Errorf("error encountered when starting queue service: %v", err)
+	}
+
+	db, err = database.InitDatabaseConnection(config.App.Database)
+	if err != nil {
+		return fmt.Errorf("error encountered when connecting to DB: %v", err)
+	}
+
+	w, err = worker.CreateWorker(workerName, db, q)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		db.Close()
+		q.Close()
+	}()
+
+	log.Printf("Starting worker: %v", workerName)
+
+	w.ProcessWork(workerName)
 	return nil
 }

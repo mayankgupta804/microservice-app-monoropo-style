@@ -32,10 +32,15 @@ type Config struct {
 	GRPCServer GRPCServer
 	Database   Database
 	Logger     Logger
+	Queue      Queue
+}
+
+type Queue struct {
+	Address  string
+	Exchange string
 }
 
 var App Config
-var DB Database
 
 func Load() {
 	viper.SetConfigName("application")
@@ -51,7 +56,7 @@ func Load() {
 		},
 		GRPCServer: GRPCServer{
 			Host: getStringOrPanic("GRPC_SERVER_HOST"),
-			Port: getStringOrPanic("GRPC_APP_PORT"),
+			Port: getStringOrPanic("GRPC_SERVER_PORT"),
 		},
 		Database: Database{
 			Name:          getStringOrPanic("DATABASE_NAME"),
@@ -64,6 +69,10 @@ func Load() {
 		},
 		Logger: Logger{
 			Output: getStringOrPanic("LOG_OUTPUT"),
+		},
+		Queue: Queue{
+			Address:  getStringOrPanic("RABBITMQ_ADDRESS"),
+			Exchange: getStringOrPanic("RABBITMQ_EXCHANGE"),
 		},
 	}
 }

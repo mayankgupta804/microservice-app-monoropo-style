@@ -28,9 +28,17 @@ func (h UpdateIncidenthandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	vars := mux.Vars(r)
 	incidentID := vars["incident_id"]
 	id, err := strconv.Atoi(incidentID)
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(domain.ErrToJSON(err, http.StatusBadRequest))
+		return
+	}
+
+	if id <= 0 {
+		e := fmt.Errorf("invalid incident id")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(domain.ErrToJSON(e, http.StatusBadRequest))
 		return
 	}
 
@@ -44,16 +52,10 @@ func (h UpdateIncidenthandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	validateErr := h.validateParams(reqBody)
-	if validateErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(domain.ErrToJSON(validateErr, http.StatusBadRequest))
-		return
-	}
-
 	updateErr := h.IncidentService.UpdateIncident(int64(id), reqBody)
 	if updateErr != nil {
-		e := fmt.Errorf("update failed: %s", updateErr.Error())
+		e := fmt.Errorf("update failed")
+		log.Printf("db errors: %v", updateErr.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(domain.ErrToJSON(e, http.StatusInternalServerError))
 		return
@@ -79,8 +81,4 @@ func (h UpdateIncidenthandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Write(responseJSON)
-}
-
-func (h UpdateIncidenthandler) validateParams(reqBody serializer.UpdateIncidentRequest) *domain.Error {
-	return nil
 }
