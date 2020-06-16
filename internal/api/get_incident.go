@@ -50,6 +50,14 @@ func (h GetIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if incident.Message == "" || len(incident.Message) == 0 {
+		e := fmt.Errorf("incident not found")
+		log.Printf("incident for id: %d not found", id)
+		w.WriteHeader(http.StatusOK)
+		w.Write(domain.ErrToJSON(e, http.StatusOK))
+		return
+	}
+
 	req := &proto.Request{Id: int64(id), IncidentStatus: "INCIDENT_FETCHED"}
 	ctx := context.Background()
 	if resp, err := h.GRPCClient.EmitEvent(ctx, req); err == nil {
