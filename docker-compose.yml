@@ -1,0 +1,67 @@
+version: '3.7'
+
+services:
+  mysql:
+    image: mayankgupta804/sq_mysql
+    ports:
+      - '3307:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: "easypeasy"
+      MYSQL_DATABASE: "squadcast"
+    networks: 
+      - webnet   
+  
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - '1883:1883'
+      - '5672:5672' 
+      - '15672:15672' 
+    networks: 
+      - webnet  
+
+  app:
+    image: mayankgupta804/sq_web:latest
+    ports:
+      - "8080:8080"   
+    networks: 
+      - webnet       
+
+  eventhandler:
+    image: mayankgupta804/sq_event:latest
+    ports:
+      - "8081:8081"
+    networks: 
+      - webnet
+
+  visualizer:
+    image: dockersamples/visualizer:latest
+    ports:
+      - 8085:8080
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - webnet          
+
+  slackworker:
+    image: mayankgupta804/sq_slackworker:latest 
+    command: ["./main", "start:worker", "slack"]
+    networks: 
+      - webnet 
+  
+  jiraworker:
+    image: mayankgupta804/sq_jiraworker:latest
+    command: [./main", "start:worker", "jira"]
+    networks: 
+      - webnet
+  
+  zendeskworker:
+    image: mayankgupta804/sq_zendeskworker:latest
+    command: ["./main", "start:worker", "zendesk "]
+    networks: 
+      - webnet 
+
+networks:
+  webnet:
+    driver: overlay
+    attachable: true
