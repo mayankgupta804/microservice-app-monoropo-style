@@ -7,6 +7,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// QueueClient exposes functionalities related to a queue
 type QueueClient interface {
 	Publish(eName string, qName string, msg []byte) error
 	Subscribe(qName string) (<-chan amqp.Delivery, func(), error)
@@ -17,6 +18,7 @@ type queueClient struct {
 	conn *amqp.Connection
 }
 
+// GetConnectionToQueue creates and returns a connection to RabbitMQ
 func GetConnectionToQueue(address string) (*queueClient, error) {
 	queue := queueClient{}
 	var err error

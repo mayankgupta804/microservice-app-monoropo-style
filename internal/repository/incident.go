@@ -11,6 +11,7 @@ import (
 	"github.com/squadcast_assignment/internal/model/entity"
 )
 
+// IncidentRepository exposes functionalities related to the application
 type IncidentRepository interface {
 	CreateIncident(incident domain.Incident) (int64, error)
 	UpdateIncident(id int64, incident domain.Incident) (int64, error)
@@ -22,6 +23,7 @@ type incidentRepository struct {
 	db database.DBClient
 }
 
+// InitIncidentRepository returns an instance of a repository
 func InitIncidentRepository(db database.DBClient) *incidentRepository {
 	ir := incidentRepository{db: db}
 	return &ir

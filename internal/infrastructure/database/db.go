@@ -7,6 +7,7 @@ import (
 	"github.com/squadcast_assignment/internal/config"
 )
 
+// DBClient exposes database functionalities
 type DBClient interface {
 	Execute(statement string, kind string) (int64, error)
 	Query(statement string) (Row, error)
@@ -17,6 +18,7 @@ type dbClient struct {
 	instance *sql.DB
 }
 
+// InitDatabaseConnection creates and returns a connection to a database
 func InitDatabaseConnection(dbConfig config.Database) (*dbClient, error) {
 	var err error
 
@@ -68,19 +70,23 @@ func (db *dbClient) Close() error {
 	return nil
 }
 
+// Row exposes functions for getting and scanning rows fetched from a DB
 type Row interface {
 	Scan(dest ...interface{})
 	Next() bool
 }
 
+// MySQLRow holds rows the structure related to DB rows
 type MySQLRow struct {
 	Rows *sql.Rows
 }
 
+// Scan scans a DB row
 func (r MySQLRow) Scan(dest ...interface{}) {
 	r.Rows.Scan(dest...)
 }
 
+// Next checks if next row is available
 func (r MySQLRow) Next() bool {
 	return r.Rows.Next()
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/squadcast_assignment/internal/config"
 )
 
+// Up is used for running migrations on DB
 func Up(dbConfig config.Database) error {
 	dbInfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 		dbConfig.User, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name)
@@ -28,6 +29,7 @@ func Up(dbConfig config.Database) error {
 	return nil
 }
 
+// Down is used for destroying migrations in a DB, if any
 func Down(dbConfig config.Database) error {
 	dbInfo := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
 		dbConfig.User, dbConfig.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name)

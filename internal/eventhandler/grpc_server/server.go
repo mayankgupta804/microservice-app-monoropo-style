@@ -39,6 +39,7 @@ func (s *server) EmitEvent(ctc context.Context, request *proto.Request) (*proto.
 	return &proto.Response{Notify: "yes"}, nil
 }
 
+// StartGRPCServer starts the GRPC server at the given port
 func StartGRPCServer(q queue.QueueClient, serverConf config.GRPCServer) error {
 	listener, err := net.Listen("tcp", ":"+serverConf.Port)
 	if err != nil {

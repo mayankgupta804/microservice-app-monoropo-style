@@ -6,6 +6,7 @@ import (
 	"github.com/squadcast_assignment/internal/serializer"
 )
 
+// IncidentService handles the interaction between webservice and the domain
 type IncidentService interface {
 	GetIncident(id int64) (*domain.Incident, *domain.Error)
 	DeleteIncident(id int64) *domain.Error
@@ -17,6 +18,7 @@ type incidentServiceImpl struct {
 	ir repository.IncidentRepository
 }
 
+// NewIncidentService returns a new incidentServiceImpl
 func NewIncidentService(repo repository.IncidentRepository) incidentServiceImpl {
 	is := incidentServiceImpl{ir: repo}
 	return is
