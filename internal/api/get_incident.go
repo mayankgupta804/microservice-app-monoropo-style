@@ -53,8 +53,8 @@ func (h GetIncidentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if incident.Message == "" || len(incident.Message) == 0 {
 		e := fmt.Errorf("incident not found")
 		log.Printf("incident for id: %d not found", id)
-		w.WriteHeader(http.StatusOK)
-		w.Write(domain.ErrToJSON(e, http.StatusOK))
+		w.WriteHeader(http.StatusNotFound)
+		w.Write(domain.ErrToJSON(e, http.StatusNotFound))
 		return
 	}
 

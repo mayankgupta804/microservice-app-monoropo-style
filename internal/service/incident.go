@@ -54,9 +54,12 @@ func (is incidentServiceImpl) UpdateIncident(id int64, reqData serializer.Update
 		Comment: []string{reqData.Comment},
 	}
 
-	_, updateErr := is.ir.UpdateIncident(id, incident)
+	rowsAffected, updateErr := is.ir.UpdateIncident(id, incident)
 	if updateErr != nil {
 		return domain.NewError(updateErr.Error())
+	}
+	if rowsAffected == 0 {
+		return domain.NewError("update failed. please check the id")
 	}
 	return nil
 }
