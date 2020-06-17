@@ -1,0 +1,137 @@
+{
+	"info": {
+		"_postman_id": "4c939e47-aba9-4378-986f-eb1711b00137",
+		"name": "Incident service APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://192.168.99.106:8080/incident",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"message\": \"issue #1\"\n}"
+				},
+				"url": {
+					"raw": "http://192.168.99.106:8080/incident",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"99",
+						"106"
+					],
+					"port": "8080",
+					"path": [
+						"incident"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://192.168.99.106:8080/incident/14",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"acknowledged\": \"yes\",\n\t\"status\": \"resolved\"\n}"
+				},
+				"url": {
+					"raw": "http://192.168.99.106:8080/incident/14",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"99",
+						"106"
+					],
+					"port": "8080",
+					"path": [
+						"incident",
+						"14"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://192.168.99.106:8080/incident/2",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"message\": \"issue #2\"\n}"
+				},
+				"url": {
+					"raw": "http://192.168.99.106:8080/incident/2",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"99",
+						"106"
+					],
+					"port": "8080",
+					"path": [
+						"incident",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://192.168.99.106:8080/incident/1",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://192.168.99.106:8080/incident/1",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"99",
+						"106"
+					],
+					"port": "8080",
+					"path": [
+						"incident",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
