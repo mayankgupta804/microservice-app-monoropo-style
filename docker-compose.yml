@@ -1,38 +1,98 @@
 version: '3.7'
 
 services:
-  mysql:
-    image: mayankgupta804/sq_mysql
+  db:
+    image: mayankgupta804/sq_db
+    command: --default-authentication-plugin=mysql_native_password
     ports:
       - '3307:3306'
     environment:
-      MYSQL_ROOT_PASSWORD: "easypeasy"
-      MYSQL_DATABASE: "squadcast"
+      - MYSQL_PASSWORD=easypeasy
+      - MYSQL_ROOT_PASSWORD=easypeasy
+      - MYSQL_DATABASE=squadcast 
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure    
     networks: 
-      - webnet   
+      - webnet
+    volumes:
+      - my-db:/var/lib/mysql   
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8082:8080  
+    networks:
+      - webnet     
   
   rabbitmq:
     image: rabbitmq
     ports:
       - '1883:1883'
       - '5672:5672' 
-      - '15672:15672' 
-    networks: 
-      - webnet  
-
-  app:
-    image: mayankgupta804/sq_web:latest
+      - '15672:15672'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure  
+    networks:
+      - webnet
+  
+  web:
+    image: mayankgupta804/sq_web
+    command: ["/wait-for-it.sh", "-t", "30", "db:3307", "--", "./main", "start:webserver"]  
     ports:
-      - "8080:8080"   
-    networks: 
-      - webnet       
-
-  eventhandler:
-    image: mayankgupta804/sq_event:latest
-    ports:
-      - "8081:8081"
+      - "8080:8080"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure     
     networks: 
       - webnet
+  
+  event:
+    image: mayankgupta804/sq_event
+    command: ["/wait-for-it.sh", "-t", "30", "rabbitmq:5672", "--", "./main", "start:eventhandler"]  
+    ports:
+      - "8081:8081"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure     
+    networks: 
+      - webnet
+  
+  slack:
+    image: mayankgupta804/sq_slack
+    command: ["/wait-for-it.sh", "-t", "30", "rabbitmq:5672", "--", "./main", "start:worker", "slack"]  
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure     
+    networks: 
+      - webnet 
+      
+  zendesk:
+    image: mayankgupta804/sq_zendesk
+    command: ["/wait-for-it.sh", "-t", "30", "rabbitmq:5672", "--", "./main", "start:worker", "zendesk"]  
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure     
+    networks: 
+      - webnet
+  
+  jira:
+    image: mayankgupta804/sq_jira
+    command: ["/wait-for-it.sh", "-t", "30", "rabbitmq:5672", "--", "./main", "start:worker", "jira"]  
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure     
+    networks: 
+      - webnet  
 
   visualizer:
     image: dockersamples/visualizer:latest
@@ -41,27 +101,11 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
-      - webnet          
-
-  slackworker:
-    image: mayankgupta804/sq_slackworker:latest 
-    command: ["./main", "start:worker", "slack"]
-    networks: 
-      - webnet 
-  
-  jiraworker:
-    image: mayankgupta804/sq_jiraworker:latest
-    command: [./main", "start:worker", "jira"]
-    networks: 
-      - webnet
-  
-  zendeskworker:
-    image: mayankgupta804/sq_zendeskworker:latest
-    command: ["./main", "start:worker", "zendesk "]
-    networks: 
-      - webnet 
+      - webnet      
 
 networks:
   webnet:
     driver: overlay
     attachable: true
+volumes:
+  my-db:    
