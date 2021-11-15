@@ -1,5 +1,18 @@
 # Squadcast Assignment
 
+# Problem Statement
+
+- Design an application in which there will be an API server which provides CRUD operations for an incident also they can acknowledge, resolve, comment to an incident. 
+- Also, 
+	- there will be an Event Handler service which will emit appropriate events based on the action taken with the incident. 
+   	- there can many worker entities (like JIRA, Slack, Zendesk, etc) which can subscribe to those events.
+- If a worker has subscribed to any event (say incident_created), when an incident is created, the Event Handler should receive the event from the API server(producer) and it should emit/sent to all the workers who subscribed to those events.
+
+
+# Architecture Diagram
+
+![architecture_diagram](arch_diag.png)
+
 
 # Incident Service
 
